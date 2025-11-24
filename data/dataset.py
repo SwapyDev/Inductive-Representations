@@ -1,10 +1,11 @@
 from torch_geometric.datasets import PPI
 from torch_geometric.utils import degree
-#Use the PPI dataset from PyTorch Geometric
 
-train = PPI(root='data/PPI', split='train')
-val   = PPI(root='data/PPI', split='val')
-test  = PPI(root='data/PPI', split='test')
+# Use the PPI dataset from PyTorch Geometric
+
+train = PPI(root="data/PPI", split="train")
+val = PPI(root="data/PPI", split="val")
+test = PPI(root="data/PPI", split="test")
 
 
 print("PPI Dataset Info")
