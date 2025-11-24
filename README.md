@@ -1,5 +1,9 @@
-##Install dependencies: 
-´pip install -r requirements.txt´
+## Install Dependencies
+```bash
+pip install -r requirements.txt+
+```
 
-##Formatting command
-´Black {path of file}´
+## Formatting command 
+```bash
+black {path_to_file_or_directory}
+```
