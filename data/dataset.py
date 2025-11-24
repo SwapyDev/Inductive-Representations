@@ -22,7 +22,7 @@ print(f"Node labels (multi-label dim): {sample.y.size(1)}")
 
 # Additional details
 print("\n=== Edge Index Shape ===")
-print(sample.edge_index.shape)  # shape is [2, num_edges]
+print(sample.edge_index.shape)
 
 # Check average node degree
 deg = degree(sample.edge_index[0], sample.num_nodes)
