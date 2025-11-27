@@ -43,6 +43,19 @@ class DataLoader:
         print(f"Train graphs: {len(self.train)}")
         print(f"Val graphs:   {len(self.val)}")
         print(f"Test graphs:  {len(self.test)}")
+
+        sample = self._train[0]
+        print("\nSample Graph:")
+        print(f"  Nodes: {sample.num_nodes}")
+        print(f"  Edges: {sample.num_edges}")
+        print(f"  Features: {sample.num_features}")
+        print(f"  Labels: {sample.y.size(1)}")
+        
+        deg = degree(sample.edge_index[0], sample.num_nodes)
+        print("\nDegree Stats:")
+        print(f"  Average: {deg.mean():.2f}")
+        print(f"  Max: {deg.max().item()}")
+        print(f"  Min: {deg.min().item()}")
     
 ppiDataLoader = DataLoader()
 ppiDataLoader.load(verbose=True)
