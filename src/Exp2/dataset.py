@@ -80,7 +80,7 @@ class AddStructuralFeatures(BaseTransform):
             if maxNodeDegree > 0:
                 nodeDegree = nodeDegree / maxNodeDegree
 
-        #Stack features to existing ones 
+        #Stack features together
         structuralFeatures = torch.stack([nodeDegree, clusteringCoef], dim=1)
 
         #Append structural features to the existing node features
