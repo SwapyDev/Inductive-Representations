@@ -1,5 +1,8 @@
 from torch_geometric.datasets import PPI
 from torch_geometric.utils import degree
+from torch_geometric.transforms import BaseTransform
+import torch 
+
 #Use the PPI dataset from PyTorch Geometric
 class DataLoader:
     def __init__(self, root = 'data/PPI'):
@@ -37,7 +40,7 @@ class DataLoader:
         if self._test is None:
             self.load()
         return self._test
-
+    #Dataset info 
     def print_info(self):
         print("PPI Dataset Info")
         print(f"Train graphs: {len(self.train)}")
@@ -56,6 +59,31 @@ class DataLoader:
         print(f"  Average: {deg.mean():.2f}")
         print(f"  Max: {deg.max().item()}")
         print(f"  Min: {deg.min().item()}")
-    
-ppiDataLoader = DataLoader()
-ppiDataLoader.load(verbose=True)
+
+class AddStructuralFeatures(BaseTransform):
+    def __init__(self, normalize = True):
+        self.normalize = normalize
+
+    #__call__ makes an object callable (i didn't know that before, lol)
+    def __call__(self, data):
+        row, col = data.edge_index
+        #This counts how many times each node appears in the edge_index
+        nodeDegree = degree(row, data.num_nodes, dtype=torch.float)
+
+        #compute clustering coefficient
+        clusteringCoef = self.compute_clustering_coefficient(data)
+
+        #Normalize features if needed
+        if self.normalize:
+            maxNodeDegree = nodeDegree.max()
+            #Normalize degree to [0,1]
+            if maxNodeDegree > 0:
+                nodeDegree = nodeDegree / maxNodeDegree
+
+        #Stack features to existing ones 
+        structuralFeatures = torch.stack([nodeDegree, clusteringCoef], dim=1)
+
+        #Append structural features to the existing node features
+        data.x = torch.cat([data.x, structuralFeatures], dim=1)
+
+        return data
