@@ -2,21 +2,26 @@ from torch_geometric.datasets import PPI
 from torch_geometric.utils import degree
 from torch_geometric.transforms import BaseTransform
 import torch 
+from torch_geometric.utils import to_networkx
+import networkx as nx 
 
 #Use the PPI dataset from PyTorch Geometric
 class DataLoader:
-    def __init__(self, root = 'data/PPI'):
+    def __init__(self, root = 'data/PPI', useStructuralFeatures = False):
         self.root = root
+        self.useStructuralFeatures = useStructuralFeatures
         self._train = None
         self._val = None
         self._test = None
 
+        self.transform = AddStructuralFeatures(normalize=True) if useStructuralFeatures else None
+
     def load(self, verbose = False):
         #Load all the splits
         if self._train is None:
-            self._train = PPI(root=self.root, split='train')
-            self._val  = PPI(root=self.root, split='val')
-            self._test  = PPI(root=self.root, split='test')
+            self._train = PPI(root=self.root, split='train', transform=self.transform)
+            self._val  = PPI(root=self.root, split='val', transform=self.transform)
+            self._test  = PPI(root=self.root, split='test', transform=self.transform)
         
             if verbose:
                 self.print_info()
@@ -64,14 +69,14 @@ class AddStructuralFeatures(BaseTransform):
     def __init__(self, normalize = True):
         self.normalize = normalize
 
-    #__call__ makes an object callable (i didn't know that before, lol)
-    def __call__(self, data):
+    #__call__ makes an object callable (i didn't know that before, lol) nvm, use forward instead of __call__
+    def forward(self, data):
         row, col = data.edge_index
-        #This counts how many times each node appears in the edge_index
+        #This counts how many times each node appears in the edgeIndex
         nodeDegree = degree(row, data.num_nodes, dtype=torch.float)
 
         #compute clustering coefficient
-        clusteringCoef = self.compute_clustering_coefficient(data)
+        clusteringCoef = self.ComputeClusteringCoefficient(data)
 
         #Normalize features if needed
         if self.normalize:
@@ -87,3 +92,34 @@ class AddStructuralFeatures(BaseTransform):
         data.x = torch.cat([data.x, structuralFeatures], dim=1)
 
         return data
+
+    def ComputeClusteringCoefficient(self, data):
+        G = to_networkx(data, to_undirected = True)
+
+        #compute clustering coefficient
+        clusteringDict = nx.clustering(G)
+
+        clusteringCoef = torch.tensor(
+            [clusteringDict[i] for i in range(data.num_nodes)],
+            dtype=torch.float
+        )
+
+        return clusteringCoef
+    
+#test it out 
+
+if __name__ == "__main__":
+    print("Baseline (No Structural Features)")
+    loader_baseline = DataLoader(useStructuralFeatures=False)
+    train_base, val_base, test_base = loader_baseline.load(verbose=True)
+    
+    print ("-" * 40)
+    print("Augmented (With Structural Features)")
+    loader_augmented = DataLoader(useStructuralFeatures=True)
+    train_aug, val_aug, test_aug = loader_augmented.load(verbose=True)
+    
+    print ("-" * 40)
+    print("Comparison of feature dimensions:")
+    print(f"Baseline feature dimension: {train_base[0].num_features}")
+    print(f"Augmented feature dimension: {train_aug[0].num_features}")
+    print(f"Difference: +{train_aug[0].num_features - train_base[0].num_features} features")
