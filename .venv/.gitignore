@@ -1,0 +1,20 @@
+# Virtual environments - NUNCA subir a Git
+.venv/
+venv/
+ENV/
+env/
+
+# Datasets
+data/
+*.pt
+*.pth
+src/Exp2/data/Reddit/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# OS
+.DS_Store
