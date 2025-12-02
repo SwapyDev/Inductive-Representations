@@ -1,23 +1,40 @@
 from torch_geometric.datasets import PPI
 from torch_geometric.utils import degree
-from torch_geometric.transforms import BaseTransform
+from torch_geometric.transforms import BaseTransform, Compose, ToUndirected
 import torch
 from torch_geometric.utils import to_networkx
 import networkx as nx
 
 
+# Transform to sort edges for LSTM aggregator
+class SortEdges(BaseTransform):
+    """Sort edge_index by destination nodes for LSTM aggregator."""
+    def forward(self, data):
+        # Sort edges by destination node (column 1)
+        data.edge_index, _ = torch.sort(data.edge_index, dim=1, stable=True)
+        return data
+
+
 # Use the PPI dataset from PyTorch Geometric
 class DataLoader:
-    def __init__(self, root="data/PPI", useStructuralFeatures=False):
+    def __init__(self, root="data/PPI", useStructuralFeatures=False, sort_edges=True):
         self.root = root
         self.useStructuralFeatures = useStructuralFeatures
+        self.sort_edges = sort_edges
         self._train = None
         self._val = None
         self._test = None
 
-        self.transform = (
-            AddStructuralFeatures(normalize=True) if useStructuralFeatures else None
-        )
+        # Build transform pipeline
+        transforms = []
+        
+        if useStructuralFeatures:
+            transforms.append(AddStructuralFeatures(normalize=True))
+        
+        if sort_edges:
+            transforms.append(SortEdges())
+        
+        self.transform = Compose(transforms) if transforms else None
 
     def load(self, verbose=False):
         # Load all the splits
@@ -74,7 +91,6 @@ class AddStructuralFeatures(BaseTransform):
     def __init__(self, normalize=True):
         self.normalize = normalize
 
-    # __call__ makes an object callable (i didn't know that before, lol) nvm, use forward instead of __call__
     def forward(self, data):
         row, col = data.edge_index
         # This counts how many times each node appears in the edgeIndex
@@ -112,7 +128,6 @@ class AddStructuralFeatures(BaseTransform):
 
 
 # test it out
-
 if __name__ == "__main__":
     print("Baseline (No Structural Features)")
     loader_baseline = DataLoader(useStructuralFeatures=False)
@@ -130,3 +145,10 @@ if __name__ == "__main__":
     print(
         f"Difference: +{train_aug[0].num_features - train_base[0].num_features} features"
     )
+    
+    print("-" * 40)
+    print("Testing edge sorting for LSTM:")
+    # Check if edges are sorted by destination
+    sample = train_base[0]
+    is_sorted = torch.all(sample.edge_index[1, :-1] <= sample.edge_index[1, 1:]).item()
+    print(f"Edges sorted by destination: {is_sorted}")

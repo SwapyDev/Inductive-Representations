@@ -8,7 +8,7 @@ def main():
     print(f"Using device: {device}\n")
     
     # Load Reddit
-    print("Loading Reddit dataset (this may take a minute)...")
+    print("Loading Reddit dataset (this may take a minute)")
     dataset = Reddit(root='data/Reddit')
     data = dataset[0]
     
@@ -38,7 +38,7 @@ def main():
     print(f"Parameters: {sum(p.numel() for p in model.parameters()):,}")
     
     # Train
-    print("\nTraining...")
+    print("\nTraining")
     trainer = SimpleRedditTrainer(model, data, device=device, lr=0.01)
     results = trainer.train(epochs=100, patience=20, verbose=True)
     
@@ -47,7 +47,7 @@ def main():
     print("COMPARISON TO PAPER")
     print("=" * 60)
     print(f"Paper (GraphSAGE-mean supervised): 0.950")
-    print(f"Your result (F1 micro): {results['f1_micro']:.4f}")
+    print(f"my result (F1 micro): {results['f1_micro']:.4f}")
     print("=" * 60)
 
 if __name__ == "__main__":

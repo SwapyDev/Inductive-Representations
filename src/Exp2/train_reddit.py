@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from sklearn.metrics import f1_score
 
 class SimpleRedditTrainer:
-    """Simple trainer for Reddit without NeighborLoader"""
+    #Simple trainer for Reddit without NeighborLoader
     
     def __init__(self, model, data, device='cpu', lr=0.01):
         self.model = model.to(device)
@@ -13,7 +13,7 @@ class SimpleRedditTrainer:
         self.criterion = torch.nn.CrossEntropyLoss()
         
     def train_epoch(self):
-        """Train for one epoch"""
+        #Train for one epoch
         self.model.train()
         self.optimizer.zero_grad()
         
@@ -27,7 +27,7 @@ class SimpleRedditTrainer:
     
     @torch.no_grad()
     def evaluate(self, mask):
-        """Evaluate on nodes specified by mask"""
+        #Evaluate on nodes specified by mask
         self.model.eval()
         
         out = self.model(self.data.x, self.data.edge_index)

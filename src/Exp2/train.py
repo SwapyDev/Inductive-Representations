@@ -6,10 +6,6 @@ import numpy as np
 
 
 class Trainer:
-    """
-    Trainer for GraphSAGE on PPI dataset.
-    """
-
     def __init__(self, model, device="cpu", lr=0.005):
         self.model = model.to(device)
         self.device = device
@@ -131,10 +127,8 @@ def train_and_evaluate(
     patience=20,
     verbose=True,
 ):
-    """Complete training and evaluation pipeline."""
-
     # Create data loaders
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 

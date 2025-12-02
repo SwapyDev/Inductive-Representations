@@ -2,7 +2,7 @@ import torch
 from torch_geometric.datasets import PPI
 from sklearn.metrics import f1_score
 
-# 1. Carga PPI
+# Load PPI
 train = PPI(root="data/PPI", split="train")
 val = PPI(root="data/PPI", split="val")
 test = PPI(root="data/PPI", split="test")
@@ -23,7 +23,7 @@ X_test, Y_test = stack(test)
 in_dim = X_train.size(1)
 out_dim = Y_train.size(1)
 
-# 2. Modelo MLP sin grafo
+# 2. MLP no graph
 model = torch.nn.Sequential(
     torch.nn.Linear(in_dim, 256), torch.nn.ReLU(), torch.nn.Linear(256, out_dim)
 )
@@ -31,7 +31,7 @@ model = torch.nn.Sequential(
 criterion = torch.nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(model.parameters(), lr=0.005)
 
-# 3. Entrenar pocas épocas (por ejemplo 20)
+#  20 epochs
 for epoch in range(1, 21):
     model.train()
     opt.zero_grad()
@@ -40,7 +40,7 @@ for epoch in range(1, 21):
     loss.backward()
     opt.step()
 
-# 4. Evaluar en test
+# evauate test
 model.eval()
 with torch.no_grad():
     logits = model(X_test)

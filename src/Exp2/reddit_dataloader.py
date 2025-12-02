@@ -8,10 +8,6 @@ class RedditDataLoader:
         self.useStructuralFeatures = useStructuralFeatures
         self._dataset = None
         self._data = None
-        
-        # Reddit no necesita transform como PPI
-        # porque es un solo grafo grande
-    
     def load(self, verbose=False):
         if self._dataset is None:
             self._dataset = Reddit(root=self.root)
@@ -26,12 +22,11 @@ class RedditDataLoader:
         return self._data
     
     def _add_structural_features(self):
-        """Add structural features to the Reddit graph"""
         from torch_geometric.utils import degree
         import networkx as nx
         from torch_geometric.utils import to_networkx
         
-        print("Computing structural features (this may take a while)...")
+        print("Computing structural features (this may take a while)")
         
         # Compute degree
         row, col = self._data.edge_index
@@ -43,9 +38,6 @@ class RedditDataLoader:
             nodeDegree = nodeDegree / maxDegree
         
         # For Reddit (giant graph), clustering coefficient is slow
-        # You can skip it or compute on a sample
-        # For now, let's just use degree
-        
         # Stack structural features
         structuralFeatures = nodeDegree.unsqueeze(1)  # Just degree for now
         
@@ -55,9 +47,6 @@ class RedditDataLoader:
         print(f"Added structural features. New feature dim: {self._data.x.shape[1]}")
     
     def print_info(self):
-        print("=" * 60)
-        print("REDDIT DATASET")
-        print("=" * 60)
         print(f"Nodes: {self._data.num_nodes:,}")
         print(f"Edges: {self._data.num_edges:,}")
         print(f"Features: {self._data.num_features}")

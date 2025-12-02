@@ -27,11 +27,11 @@ def run_single_experiment(
 
     # Create model
     print(f"Creating {aggregator.upper()} model...")
-    model = GraphSAGE(
+    model = GraphSAGE( 
         in_channels=in_channels,
         hidden_channels=128,
         num_layers=2,
-        out_channels=50,
+        out_channels=121,
         dropout=0.5,
         aggr=aggregator,
     )
@@ -149,5 +149,50 @@ def main():
     print("\n✓ Results saved to experiment_results.csv")
 
 
+def run_unsupervised_experiment():
+    #Run unsupervised GraphSAGE experiment
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(f"Using device: {device}")
+    
+    from dataloader import DataLoader as PPIDataLoader
+    from train_unsupervised import train_and_evaluate_unsupervised
+    
+    print("\n" + "=" * 70)
+    print("UNSUPERVISED EXPERIMENT")
+    print("=" * 70)
+    
+    # Load data
+    loader = PPIDataLoader(useStructuralFeatures=False)
+    train_dataset, val_dataset, test_dataset = loader.load(verbose=False)
+    
+    # Create model
+    model = GraphSAGE(
+        in_channels=50,
+        hidden_channels=256,
+        num_layers=2,
+        out_channels=256,  # Output embeddings, not classes!
+        dropout=0.5,
+        aggr='mean'
+    )
+    
+    # Train unsupervised
+    results = train_and_evaluate_unsupervised(
+        model, train_dataset, val_dataset, test_dataset,
+        device=device, epochs=50, verbose=True
+    )
+    
+    print("\n" + "=" * 70)
+    print("COMPARISON TO PAPER")
+    print("=" * 70)
+    print(f"Paper (unsupervised): 0.486")
+    print(f"my result: {results['micro_f1']:.4f}")
+    print("=" * 70)
+
+# Agregar al if __name__ == "__main__":
 if __name__ == "__main__":
-    main()
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == '--unsupervised':
+        run_unsupervised_experiment()
+    else:
+        main()  # Supervised (actual)
